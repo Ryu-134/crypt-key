@@ -174,31 +174,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 5. **Configure VSCode:**
 
-    1. **Copy Configuration Files**:
-        - Navigate to the `.vscode` directory.
-        - Copy `tasks.json.example` and `launch.json.example`.
-        - Rename them to `tasks.json` and `launch.json` respectively.
-
-    2. **Update Paths**:
-        - Edit `tasks.json` and `launch.json` to replace any placeholder paths (e.g., `path-to-msys2`).
-
-    3. **Ignore Personal Configurations**:
-        - To avoid committing personal configurations, (which may include machine-specific paths or sensitive data) ensure the following entries are in your `.gitignore`:
-
-        ```plaintext
-        .vscode/tasks.json
-        .vscode/launch.json
-        ```    
-
-    4. **Build and Run**:
-        - Press `Ctrl+Shift+B` to build the project.
-        - Press `F5` to run the application.
-
-6. **Build and Run:**
-
-   - Open the project folder in VSCode.
-   - **Build:** Press `Ctrl+Shift+B` and select "Build Entire Project".
-   - **Run:** Press `F5` to start debugging.
-
 ---
 
