@@ -1,14 +1,45 @@
 # CryptKey - ! WARNING: these are all temporary placeholders, will finalize later ! 
 
-This is project for creating an offline password manager, demonstrating proficiency in C++ programming, GUI development, and software design principles.
+## Team Workflow - REMOVE LATER
+1. **Create feature branch**:
+```
+git checkout main         # Switch to main branch
+git pull origin main      # Get latest changes
+git checkout -b feature-branch # Create a new branch for the feature
+```
 
-**Goal:** Securely store passwords locally on the user's machine without internet connectivity.
+2. **Work on feature and commit to that branch**
+```
+git add .
+git commit -m "Added new feature X"
+```
+
+3. **Keep feature branch up to date: SYNC with latest main branch**
+```
+git pull --rebase origin main # apply local changes over up to date main 
+```
+
+4. **Push feature branch**
+```
+git push origin feature-branch
+```
+
+5. **Merge feature branch into main: use Pull Requests**
+  - Go to GitHub, open Pull Request (PR) from feature-branch -> main
+  - Team review, approve, merge PR
+  - (AT END OF PROJECT): delete feature branch
+---
+
+## Project Mission
+This is a project for creating an offline password manager in C++ with integrated GUI adhereing to software engineering principles.
+
+**Goal:** Securely, efficiently, and conveniently store passwords locally on the user's machine without internet connectivity.
 
 ## Features
 
 - **Offline Use:** Local password storage and exporting
-- **Password Generation:** Generates secure passwords using a mix of characters.
-- **Console and GUI Interfaces:** Offers both console-based and graphical user interfaces.
+- **Password Generation:** Generates secure passwords using a mix of characters with user customizability.
+- **GUI Interfaces:** Offers intuitve graphical user interfaces for ease of use.
 - **Data Storage:** Saves password entries to a CSV file (`user_data.csv`).
 - **File Handling:** Checks for existing entries and handles file operations.
 
@@ -16,42 +47,29 @@ This is project for creating an offline password manager, demonstrating proficie
 
 ### Prerequisites
 
-- **Operating System:** Windows 11
-- **Compiler:** GCC (MinGW-w64) or compatible
+- **Operating System:** 
+- **Compiler:** 
 - **Development Environment:** Visual Studio Code (VSCode)
 - **Dependencies:**
-  - [GLFW](https://www.glfw.org/)
-  - [GLAD](https://glad.dav1d.de/)
-  - [Dear ImGui](https://github.com/ocornut/imgui)
-  - [MSYS2](https://www.msys2.org/) for GCC and Unix tools on Windows
+  - **TBA**
 
 ### Installation
 
 1. **Clone the Repository:**
 
-   ```bash
+   ```
    git clone https://github.com/Ryu-134/offline-password-manager.git
    ```
 
 2. **Install Dependencies:**
 
-   - **GLFW:**  
-     Download and build from [glfw.org](https://www.glfw.org/).  
-     Place the compiled libraries in `gui/GLFW/`.
-
-   - **GLAD:**  
-     Generate the loader from [glad.dav1d.de](https://glad.dav1d.de/).  
-     Place the files in `gui/GLAD/`.
-
-   - **Dear ImGui:**  
-     Clone or download from [GitHub](https://github.com/ocornut/imgui).  
-     Place the necessary files in `gui/ImGui/`.
+   - **TBA**
 
 3. **Set Up the Directory Structure:**
 
    Ensure your project directory is organized as follows:
 
-   ```plaintext
+   ```
    PasswordManager/
    ├── src/
    │   ├── main.cpp
@@ -62,10 +80,7 @@ This is project for creating an offline password manager, demonstrating proficie
    │   ├── FileHandler.h
    │   └── gui.h
    ├── gui/
-   │   ├── gui.cpp
-   │   ├── ImGui/
-   │   ├── GLFW/
-   │   └── GLAD/
+   │   ├── ***TBA***
    ├── .vscode/
        ├── tasks.json
        └── launch.json
@@ -76,22 +91,9 @@ This is project for creating an offline password manager, demonstrating proficie
    - Place `tasks.json` and `launch.json` in the `.vscode/` directory.
    - Adjust paths in `tasks.json` and `launch.json` to match your directory structure.
 
-### Build the Project
-
-1. Open the project in VSCode.
-2. Use the provided `tasks.json` to build the project:
-   - Press `Ctrl+Shift+B` and select "Build Entire Project (Powershell)".
+### Build the Project - TBA - CONSIDER CREATING BINARY TO LOAD ONTO USB
 
 ### Running the Application
-
-- **GUI Version:**
-  - Ensure the GUI code is uncommented in `main.cpp`.
-  - Run the application using VSCode's debugger or execute `output.exe` from the `build/` directory.
-
-- **Console Version:**
-  - Comment out the GUI code and uncomment the console application code in `main.cpp`.
-  - Rebuild the project.
-  - Run the application from the terminal or VSCode.
 
 ## Usage
 
@@ -101,13 +103,9 @@ This is project for creating an offline password manager, demonstrating proficie
 2. Enter the site and username in the respective fields.
 3. Click "Generate Password" to create a new password.
 4. Click "Save Entry" to save the details to `user_data.csv`.
+  - a. Append if entry does not exist
+  - b. If entry exists prompt user to overwrite or not.
 
-### Console Interface:
-
-1. Run the application in the terminal.
-2. Follow the prompts to enter the site and username.
-3. The application will generate a password and display it.
-4. Confirm if you want to save the entry.
 
 ## Project Structure
 
@@ -123,9 +121,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- Dear ImGui for the GUI library.
-- GLFW for window creation and management.
-- GLAD for OpenGL function loading.
 
 ---
 
@@ -133,46 +128,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Prerequisites
 
-- **Operating System:** Windows 11
-- **Compiler:** GCC (MinGW-w64)
+- **Operating System:** 
+- **Compiler:** 
 - **IDE:** Visual Studio Code (VSCode)
 - **Dependencies:**
-  - [GLFW](https://www.glfw.org/)
-  - [GLAD](https://glad.dav1d.de/)
-  - [Dear ImGui](https://github.com/ocornut/imgui)
+  - **TBA**
+
 - **Tools:**
-  - [MSYS2](https://www.msys2.org/) for GCC and other Unix tools on Windows.
+  - TBA
 
 ## Setup Instructions
-
-1. **Install MSYS2 and GCC:**
-
-   - Download and install MSYS2 from the official website.
-   - Update packages and install `mingw-w64` toolchain.
-
-     ```bash
-     pacman -Syu
-     pacman -S mingw-w64-ucrt-x86_64-gcc
-     ```
-
-2. **Install VSCode and Extensions:**
-
-   - Install Visual Studio Code.
-   - Install the C/C++ extension by Microsoft.
-
-3. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/yourusername/password-manager.git
-   ```
-
-4. **Set Up Dependencies:**
-
-   - **GLFW:** Download and build.
-   - **GLAD:** Generate loader and place files in `gui/GLAD/`.
-   - **Dear ImGui:** Clone repository and add files to `gui/ImGui/`.
-
-5. **Configure VSCode:**
 
 ---
 
