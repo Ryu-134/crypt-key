@@ -25,9 +25,16 @@ git push origin feature-branch
 ```
 
 5. **Merge feature branch into main: use Pull Requests**
+  - Rebase on feature branch before opening pull request to update to latest at main
   - Go to GitHub, open Pull Request (PR) from feature-branch -> main
   - Team review, approve, merge PR
-  - (AT END OF PROJECT): delete feature branch
+
+6. **After merging feature branch update local main (optionally delete feature branch if applicable)**
+```
+git checkout main
+git pull origin main
+
+```
 ---
 
 ## Project Mission
