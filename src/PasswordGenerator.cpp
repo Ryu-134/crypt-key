@@ -3,7 +3,7 @@ VER:
     1. Basic password generation
     2. Create data structure to hold existing password in file to ensure none match and prompt user if enrty already exists
     2. Specify length of password to be generated
-    3. Provide user control for characters to not include `
+    3. Provide user control for characters to not include 
 
 */
 
