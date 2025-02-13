@@ -14,9 +14,12 @@ git add .
 git commit -m "Added new feature X"
 ```
 
-3. **Keep feature branch up to date: SYNC with latest main branch**
+3. **Keep feature branch up to date: SYNC with latest of remote feature & main branch**
 ```
-git pull --rebase origin main # apply local changes over up to date main 
+git pull --rebase       # 1. keep local feature updated to remote feature 
+# OR
+git fetch origin        # 2. keep local feature up to date with remote main
+git rebase origin/main
 ```
 
 4. **Push feature branch**
@@ -25,8 +28,13 @@ git push origin feature-branch
 ```
 
 5. **Merge feature branch into main: use Pull Requests**
-  - Rebase on feature branch before opening pull request to update to latest at main
-  - Go to GitHub, open Pull Request (PR) from feature-branch -> main
+  - Rebase on feature branch before opening pull request to update to latest at main  
+```
+  git fetch origin
+  git rebase origin/main
+
+```
+  - Go to GitHub, open Pull Request (PR) from feature-branch -> main; address any merge conflicts
   - Team review, approve, merge PR
 
 6. **After merging feature branch update local main (optionally delete feature branch if applicable)**
