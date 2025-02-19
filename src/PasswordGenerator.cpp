@@ -2,10 +2,11 @@
 FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind (parameters and returns)
 --------
 TODO:
-
+    
     2. Specify length of password to be generated
     3. Provide user control for characters to not include (some special characters may not be allowed)
     4. Provide sub option for user to type in own custom password
+    5. Add option to remove special characters entirely simply with one click 
 
     FOR LATER: Create data structure to hold existing password in file to ensure none match and prompt user if enrty already exists to give option to overwrite or cancel
 
