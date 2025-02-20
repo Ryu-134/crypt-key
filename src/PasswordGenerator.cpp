@@ -1,11 +1,10 @@
 /*
-FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind (parameters and returns)
+FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind no matter what (parameters and returns)
 --------
 TODO:
-
+    1. Add option to remove special characters entirely simply with one click so its only numbers and letters (lower & upper case) 
+    2. Provide sub option for user to type in own custom password, to be treated in gui as a suboption to click to choose own password entry
     3. Provide user control for characters to not include (some special characters may not be allowed on webpages)
-    4. Provide sub option for user to type in own custom password
-    5. Add option to remove special characters entirely simply with one click 
 
     FOR LATER: Create data structure to hold existing password in file to ensure none match and prompt user if enrty already exists to give option to overwrite or cancel
 
@@ -16,14 +15,9 @@ TODO:
 #include <random>       // bring in random library for better random generation than rand()
 #include "PasswordGenerator.h"
 
-// default constructor to generate password of 16-char length
-PasswordGenerator::PasswordGenerator() {
-    password = generatePassword(16);
-}
-
 // constructor when password length  specified
-PasswordGenerator::PasswordGenerator(int length) {
-    password = generatePassword(length);
+PasswordGenerator::PasswordGenerator(int length, bool removeSpecialChar) {
+    password = generatePassword(length, removeSpecialChar);
 }
 
 // getter
@@ -43,8 +37,14 @@ int PasswordGenerator::randomIndexGenerator(int max) {
 }
 
 // generate password string
-std::string PasswordGenerator::generatePassword(int length) {
-    std::string charSet= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ{}()[]:;#^,.?!|&_`'~@$%/+*-=";
+std::string PasswordGenerator::generatePassword(int length, bool removeSpecialChar) {
+    std::string charSet;
+    if (!removeSpecialChar) {
+        charSet= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ{}()[]:;#^,.?!|&_`'~@$%/+*-=";
+    } else {
+        std::string charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
+
     std::string createdPassword;
     int charSetLength = charSet.size();     // get length of charSet to be used for password
 
