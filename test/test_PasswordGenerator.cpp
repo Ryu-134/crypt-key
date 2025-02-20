@@ -16,7 +16,7 @@ int main() {
     std::string passwordAgain = pg.getPassword();
     assert(password == passwordAgain && "Password should be constsistent for same instance");
     std::cout << "Password 1: " << password << " Password 2: " << passwordAgain << std::endl; 
-    std::cout << "Password is consistent given same instance/seed.\n";
+    std::cout << "Password is consistent given same instance/seed" << std::endl;
 
     // Test 3: Uniqueness Test 
     const int uniqueTest = 1000;
@@ -27,7 +27,7 @@ int main() {
     }
     // Expect most passwords to be unique; currently set at 99.5% uniqueness req
     assert(uniquePasswords.size() >= 995 && "Expected at least 995 unique passwords out of 1000 instances");
-    std::cout << "Passwords generated in 1000 instances were unique at least 99.5% of the time\n";
+    std::cout << "Passwords generated in 1000 instances were unique at least 99.5% of the time" << std::endl;
 
     // Test 4: Custom Length Test
     int customLength = 24;

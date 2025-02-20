@@ -5,14 +5,16 @@
 
 class PasswordGenerator {
 public: 
-    PasswordGenerator();    // default constructor to give 16 char complex password
-    PasswordGenerator(int length);      // constructor when length specified
+    // upon instantiation generate password; defaults to 16 char but length and special char inclusion can be customized
+    PasswordGenerator(int length = 16, bool removeSpecialChar = false); 
     std::string getPassword() const;
 
 private:
     std::string password;
     int randomIndexGenerator(int max);      // parameter to determine max value based on charSet length
+    std::string generatePassword();     
     std::string generatePassword(int length);     
+    std::string generatePassword(int length = 16, bool removeSpecialChar = false);     
 };
 
 #endif
