@@ -3,6 +3,7 @@
 #include <cassert> 
 #include <unordered_set>
 #include <string> 
+#include <cctype>
 #include "PasswordGenerator.h"
 
 int main() {
@@ -30,13 +31,29 @@ int main() {
     std::cout << "Passwords generated in 1000 instances were unique at least 99.5% of the time" << std::endl;
 
     // Test 4: Custom Length Test
-    int customLength = 24;
+    int customLength = 32;
     PasswordGenerator customGen(customLength);
     std::string customPassword = customGen.getPassword();
     assert(customPassword.size() == customLength && "Password must be length as specified");
     std::cout << "Custom length password of length " << customLength << " characters: " << customPassword << std::endl;
 
-    std::cout << "All tests passed!" << std::endl;
+    // Test 5: Exclude all specials chars
+    PasswordGenerator noSpecial(32, true);
+    std::string noSpecialCharPass = noSpecial.getPassword();
+    for (char c : noSpecialCharPass) {
+        assert(std::isalnum(c) && "Password should only contain alphanumeric characters when removeSpecialChar is true");
+    }
+    std::cout << "Password with no special characters generated: " << noSpecialCharPass << std::endl;
+
+    // Test 6: Exclude Selected Characters Test
+    std::string excluded = "{}()[]:;#^,.?!|&_`'~@$";     // everything but arithmetic chars excluded
+    PasswordGenerator excludeSelected(32, false, excluded);
+    std::string excludePass = excludeSelected.getPassword();
+    for (char c : excluded) {
+        assert(excludePass.find(c) == std::string::npos && "Excluded character found in password");
+    }
+    std::cout << "Password with selected characters (" << excluded << ") excluded: " << excludePass << std::endl;
+
     return 0;
 
 }
