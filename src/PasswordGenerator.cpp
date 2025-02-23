@@ -2,27 +2,24 @@
 FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind no matter what (parameters and returns)
 --------
 TODO:
-    1. Add option to remove special characters entirely simply with one click so its only numbers and letters (lower & upper case) 
-    2. Provide sub option for user to type in own custom password, to be treated in gui as a suboption to click to choose own password entry
-    3. Provide user control for characters to not include (some special characters may not be allowed on webpages)
-
-    FOR LATER: Create data structure to hold existing password in file to ensure none match and prompt user if enrty already exists to give option to overwrite or cancel
-
+    1. Provide user control for characters to not include (some special characters may not be allowed on webpages)
+    2. Add to unit test to see if password without special char is made and password with SPECIFIC special chars not to be used is made
 */
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include <random>       // bring in random library for better random generation than rand()
 #include "PasswordGenerator.h"
 
 // constructor when password length  specified
-PasswordGenerator::PasswordGenerator(int length, bool removeSpecialChar) {
-    password = generatePassword(length, removeSpecialChar);
+PasswordGenerator::PasswordGenerator(int length, bool excludeSpecialChars, const std::string& excludedChars) {
+    m_password = generatePassword(length, excludeSpecialChars, excludedChars);
 }
 
 // getter
 std::string PasswordGenerator::getPassword() const {
-    return password;
+    return m_password;
 }
 
 // generate random index int
@@ -37,17 +34,22 @@ int PasswordGenerator::randomIndexGenerator(int max) {
 }
 
 // generate password string
-std::string PasswordGenerator::generatePassword(int length, bool removeSpecialChar) {
+std::string PasswordGenerator::generatePassword(int length, bool excludeSpecialChars, const std::string& excludedChars) {
     std::string charSet;
-    if (!removeSpecialChar) {
+    // exclude all special chars if selected
+    if (!excludeSpecialChars) {
         charSet= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ{}()[]:;#^,.?!|&_`'~@$%/+*-=";
     } else {
-        std::string charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
+
+    // remove chars specified
+    for (char c : excludedChars) {
+        charSet.erase(std::remove(charSet.begin(), charSet.end(), c), charSet.end());
     }
 
     std::string createdPassword;
     int charSetLength = charSet.size();     // get length of charSet to be used for password
-
     for (int i = 0; i < length; i++) {
         int index = randomIndexGenerator(charSetLength);         // call method to get random index
         char randomCharacter = charSet[index];      // acquire character at random index from set character list
