@@ -4,7 +4,7 @@
 #include <string>
 
 class PasswordGenerator {
-public: 
+public:
     PasswordGenerator();
     std::string getPassword() const;
 
