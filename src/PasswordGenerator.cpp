@@ -1,47 +1,57 @@
 /*
-FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind (parameters and returns)
+FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind no matter what (parameters and returns)
 --------
 TODO:
-
-    2. Specify length of password to be generated
-    3. Provide user control for characters to not include (some special characters may not be allowed)
-    4. Provide sub option for user to type in own custom password
-
-    FOR LATER: Create data structure to hold existing password in file to ensure none match and prompt user if enrty already exists to give option to overwrite or cancel
-
+    1. Provide user control for characters to not include (some special characters may not be allowed on webpages)
+    2. Add to unit test to see if password without special char is made and password with SPECIFIC special chars not to be used is made
 */
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include <random>       // bring in random library for better random generation than rand()
-#include "../include/PasswordGenerator.h"
+#include "PasswordGenerator.h"
 
-// constructor to generate password when object is instantiated
-PasswordGenerator::PasswordGenerator() {
-    password = generatePassword();
+// constructor when password length  specified
+PasswordGenerator::PasswordGenerator(int length, bool excludeSpecialChars, const std::string& excludedChars) {
+    m_password = generatePassword(length, excludeSpecialChars, excludedChars);
 }
 
 // getter
 std::string PasswordGenerator::getPassword() const {
-    return password;
+    return m_password;
 }
 
 // generate random index int
-int PasswordGenerator::randomIndexGenerator() {
+int PasswordGenerator::randomIndexGenerator(int max) {
     static std::random_device rd;       // seed; non-deterministic: pulled from hardware; unsigned int
-    static std::mt19937 gen(rd());     // generator; random_device + mt19937 = random sequence everytime; mt19937: mersenne twist, high quality PRNG, Conventional Use, 32-bit range
-    std::uniform_int_distribution<> dist(0, 89);  // distributor: maps 32-bit sequence from mt19937 to specified range; 90 slots given string charSet
+    // generator; random_device + mt19937 = random sequence everytime; mt19937: mersenne twist, high quality PRNG, Conventional Use, 32-bit range
+    static std::mt19937 gen(rd());    
+    // distributor: maps 32-bit sequence from mt19937 to specified range; (0 ~ max-1) to distribute over password length thats 1-indexed
+    std::uniform_int_distribution<> dist(0, max - 1);  
     int randomIndex;
     return randomIndex = dist(gen);        // executes generator and distributor to get random value
 }
 
 // generate password string
-std::string PasswordGenerator::generatePassword() {
-    std::string charSet= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ{}()[]:;#^,.?!|&_`'~@$%/+*-=";
-    std::string createdPassword;
+std::string PasswordGenerator::generatePassword(int length, bool excludeSpecialChars, const std::string& excludedChars) {
+    std::string charSet;
+    // exclude all special chars if selected
+    if (!excludeSpecialChars) {
+        charSet= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ{}()[]:;#^,.?!|&_`'~@$%/+*-=";
+    } else {
+        charSet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
 
-    for (int i = 0; i < 16; i++) {
-        int index = randomIndexGenerator();         // call method to get random index
+    // remove chars specified
+    for (char c : excludedChars) {
+        charSet.erase(std::remove(charSet.begin(), charSet.end(), c), charSet.end());
+    }
+
+    std::string createdPassword;
+    int charSetLength = charSet.size();     // get length of charSet to be used for password
+    for (int i = 0; i < length; i++) {
+        int index = randomIndexGenerator(charSetLength);         // call method to get random index
         char randomCharacter = charSet[index];      // acquire character at random index from set character list
         createdPassword += randomCharacter;        // append to createdPassword
     }
