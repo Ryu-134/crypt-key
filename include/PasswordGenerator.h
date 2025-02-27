@@ -12,7 +12,6 @@ public:
        PasswordGenerator pg(20, false, "@#$");      // 20-char password, special chars included but exclude '@', '#', '$'
     */ 
     PasswordGenerator(int length = 16, bool excludeSpecialChars = false, const std::string& excludedChars = ""); 
-main
     std::string getPassword() const;
 
 private:
