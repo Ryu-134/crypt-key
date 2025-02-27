@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (
     QApplication, QLabel, QComboBox, QPushButton,
-    QVBoxLayout, QHBoxLayout, QWidget, QLineEdit
+    QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QSpacerItem, QSizePolicy
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
@@ -12,23 +12,60 @@ class CryptKeyApp(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        # Set window title and size
+        # Set window properties
         self.setWindowTitle("CryptKey")
         self.setStyleSheet("background-color: white;")
-        self.setGeometry(100, 100, 800, 500)
+        self.setGeometry(100, 100, 900, 600)
 
-        # Title Label
-        title = QLabel("CryptKey", self)
-        title.setFont(QFont("Arial", 30, QFont.Weight.Bold))
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet("background-color: black; color: white; padding: 20px;")
+        # Title Bar (Ensures Full Width)
+        title_bar = QLabel("CryptKey", self)
+        title_bar.setFont(QFont("Arial", 36, QFont.Weight.Bold))
+        title_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_bar.setStyleSheet("""
+            background-color: black;
+            color: white;
+            padding: 20px;
+            width: 100%;
+        """)
 
-        # Drop-down options (Choose How, Length, Special Characters, Numbers, Upper Cases)
-        self.choose_how = self.create_dropdown(["Custom", "Random"])
-        self.length = self.create_dropdown(["8", "12", "16", "20", "24", "32"], default="16")
-        self.special_chars = self.create_dropdown(["None", "Some", "All"])
-        self.numbers = self.create_dropdown(["Yes", "No"])
-        self.uppercase = self.create_dropdown(["Yes", "No"])
+        # Dropdown Styling (Rounded Edges & Improved Visibility)
+        dropdown_style = """
+            QComboBox {
+                background-color: lightgray;
+                border-radius: 15px;  /* Rounded edges */
+                padding: 5px 15px;
+                font-size: 16px;
+                color: black;
+                min-width: 100px;
+                border: 1px solid black;
+            }
+            QComboBox::drop-down {
+                border: 0px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: white;
+                border: 1px solid black;
+                selection-background-color: lightgray;
+                color: black;
+            }
+        """
+
+        # Create dropdowns
+        self.choose_how = self.create_dropdown(["Custom", "Random"], dropdown_style)
+        self.length = self.create_dropdown(["8", "12", "16", "20", "24", "32"], dropdown_style, default="16")
+        self.special_chars = self.create_dropdown(["None", "Some", "All"], dropdown_style)
+        self.numbers = self.create_dropdown(["Yes", "No"], dropdown_style)
+        self.uppercase = self.create_dropdown(["Yes", "No"], dropdown_style)
+
+        # Create Labels Above Dropdowns (Increase Text Size, Reduce Spacing)
+        row1_layout = QHBoxLayout()
+        row1_layout.addLayout(self.create_form_section("Choose How", self.choose_how))
+        row1_layout.addLayout(self.create_form_section("Length", self.length))
+        row1_layout.addLayout(self.create_form_section("Special Characters", self.special_chars))
+
+        row2_layout = QHBoxLayout()
+        row2_layout.addLayout(self.create_form_section("Numbers", self.numbers))
+        row2_layout.addLayout(self.create_form_section("Upper Cases", self.uppercase))
 
         # Password Display Box
         self.password_display = QLineEdit()
@@ -36,71 +73,85 @@ class CryptKeyApp(QWidget):
         self.password_display.setPlaceholderText("Your Password")
         self.password_display.setStyleSheet("""
             background-color: lightgray; 
+            color: black;
             border-radius: 5px; 
-            padding: 10px;
+            padding: 15px;
+            font-size: 18px;
         """)
 
-        # Save Button
-        save_button = QPushButton("Save")
-        save_button.setStyleSheet("""
+        # Darker "Your Password" Text
+        password_label = QLabel("Your Password")
+        password_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))  # Increased font size
+        password_label.setStyleSheet("color: black; padding-bottom: 5px;")  # Reduced spacing below label
+
+        # Save Button (Clickable with Visual Feedback)
+        self.save_button = QPushButton("Save")
+        self.save_button.setStyleSheet("""
             background-color: white; 
             border: 2px solid black; 
-            border-radius: 10px; 
-            padding: 10px; 
+            border-radius: 20px; 
+            padding: 12px 20px; 
             font-size: 16px;
+            color: black;
         """)
+        self.save_button.pressed.connect(self.on_save_click)
 
-        # Layouts
+        # Main Layout
         main_layout = QVBoxLayout()
-        main_layout.addWidget(title)
+        main_layout.addWidget(title_bar)
 
-        form_layout = QHBoxLayout()
-        form_layout.addLayout(self.create_form_section("Choose How", self.choose_how))
-        form_layout.addLayout(self.create_form_section("Length", self.length))
-        form_layout.addLayout(self.create_form_section("Special Characters", self.special_chars))
+        main_layout.addSpacing(10)  # Reduce spacing after the title
+        main_layout.addLayout(row1_layout)
+        main_layout.addSpacing(10)  # Reduce spacing between rows
+        main_layout.addLayout(row2_layout)
+        main_layout.addSpacing(30)  # Reduce space before password box
 
-        second_row_layout = QHBoxLayout()
-        second_row_layout.addLayout(self.create_form_section("Numbers", self.numbers))
-        second_row_layout.addLayout(self.create_form_section("Upper Cases", self.uppercase))
-
-        # Password Box Layout
+        # Password Layout
         password_layout = QVBoxLayout()
-        password_label = QLabel("Your Password")
-        password_label.setFont(QFont("Arial", 12))
-        password_layout.addWidget(password_label)
+        password_layout.addWidget(password_label, alignment=Qt.AlignmentFlag.AlignCenter)
         password_layout.addWidget(self.password_display)
-
-        # Button Layout
-        button_layout = QHBoxLayout()
-        button_layout.addWidget(save_button, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        # Add layouts to main layout
-        main_layout.addLayout(form_layout)
-        main_layout.addLayout(second_row_layout)
         main_layout.addLayout(password_layout)
+
+        main_layout.addSpacing(10)  # Reduce space before button
+
+        # Save Button Layout (Centered)
+        button_layout = QHBoxLayout()
+        button_layout.addItem(QSpacerItem(40, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+        button_layout.addWidget(self.save_button)
+        button_layout.addItem(QSpacerItem(40, 10, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
         main_layout.addLayout(button_layout)
 
         self.setLayout(main_layout)
 
-    def create_dropdown(self, options, default=None):
+    def create_dropdown(self, options, style, default=None):
         dropdown = QComboBox()
         dropdown.addItems(options)
+        dropdown.setStyleSheet(style)
         if default:
             dropdown.setCurrentText(default)
-        dropdown.setStyleSheet("""
-            background-color: lightgray; 
-            border-radius: 10px; 
-            padding: 5px;
-        """)
         return dropdown
 
     def create_form_section(self, label_text, widget):
         layout = QVBoxLayout()
         label = QLabel(label_text)
-        label.setFont(QFont("Arial", 12))
-        layout.addWidget(label, alignment=Qt.AlignmentFlag.AlignCenter)
+        label.setFont(QFont("Arial", 14, QFont.Weight.Bold))  # Increase text size
+        label.setStyleSheet("color: black; padding-bottom: 2px;")  # Reduce spacing below label
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(label)
         layout.addWidget(widget, alignment=Qt.AlignmentFlag.AlignCenter)
         return layout
+
+    def on_save_click(self):
+        """Handles the save button click event (visually changes button color)"""
+        self.save_button.setStyleSheet("""
+            background-color: lightgray; 
+            border: 2px solid black; 
+            border-radius: 20px; 
+            padding: 12px 20px; 
+            font-size: 16px;
+            color: black;
+        """)
+        print("Save button clicked!")  # For testing
 
 
 # Run the PyQt App

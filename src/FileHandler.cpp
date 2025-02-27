@@ -30,7 +30,7 @@ void FileHandler::checkFile()
 // create file
 void FileHandler::createFile()
 {
-  if (!guiMode && std::cin.good())
+  if (std::cin.good())
   {
     while (true)
     {
@@ -102,7 +102,7 @@ std::string FileHandler::formatEntry()
 // save new password entry and send confirmation
 void FileHandler::saveData(const std::string &newEntry)
 {
-  if (!guiMode && std::cin.good())
+  if (std::cin.good())
   { // check if cin is connected (console application)
     while (true)
     {                               // for console
@@ -151,7 +151,7 @@ void FileHandler::saveData(const std::string &newEntry)
   }
 };
 
-// read CSV file to see if password doesnt already exist
+// read CSV file to see if password doesn't already exist
 void FileHandler::entryExists(const std::string &siteForPassword)
 {
   std::string line;

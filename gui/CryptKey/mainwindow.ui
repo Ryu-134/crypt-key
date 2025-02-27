@@ -17,8 +17,8 @@
    <widget class="QDial" name="dial">
     <property name="geometry">
      <rect>
-      <x>480</x>
-      <y>160</y>
+      <x>400</x>
+      <y>150</y>
       <width>60</width>
       <height>64</height>
      </rect>
