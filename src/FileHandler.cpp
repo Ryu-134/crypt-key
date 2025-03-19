@@ -1,189 +1,125 @@
-/* FAQ: develop with gui in mind; use parameters and return to separate frontend and backend
-*/
-
-/*
-Ver:
+/* 
+FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind no matter what (parameters and returns)
+----------
+TODO:
+0. Remove date from entry, entry should only be: "website, username, password"
 1. General functionality to check existence, load, save
-2. Move cout/cin into main; separate front and back end
-3. update so entryExists (or other) can overwrite existing entry instead of exiting program
-  a. prompt user to overwrite or cancel
-4. Add option for where to check for file existence OR omit if we can make .exe within usb
-3. Add option where to output file too (USB drive)
+2. Move cout/cin into main; ENSURE separate front and back end
+3. update so entryExists (or other) can overwrite existing entry instead of exiting program & prompt user to overwrite or cancel process; ensure efficient and proper data structure is used to store existing enty to compare against new entry 
+4. Ensure new entries are placed properly in alphabetical order 
+5. Ensure CSV file is at same directory level as program so it can append to USB as program will be in a root directory on a USB which also holds the CSV file at root  
+    a. native behavior in C++ std library, DONT hardcode path for portability; simply run program from where file should be stored (e.g. USB root directory) 
+----------
+NOTE: explored storing as '.xlsx' or an excel file but not worth it, not as portable as CSV and bring in much more layers to parse 
 */
 
-#include <iostream>
+
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
-
+#include <vector>
+#include <algorithm>
 #include "FileHandler.h"
 
-void FileHandler::checkFile()
-{
-  if (!std::filesystem::exists(password_file))
-  {
-    std::cout << "File does not exist. Creating new file...\n";
-    std::ofstream file(password_file);
-  }
+
+FileHandler::FileHandler() {
+    if (!fileExists()) {
+        createFile();
+    }
 }
 
-// create file
-void FileHandler::createFile()
-{
-  if (std::cin.good())
-  {
-    while (true)
-    {
-      std::cout << "Would you like to create a file?\n"
-                << "Enter y or n.\n";
-      std::string userConfirmation;
-      std::getline(std::cin, userConfirmation);
+bool FileHandler::fileExists() {
+    return std::filesystem::exists(password_file);
+}
 
-      if (userConfirmation.length() != 1)
-      {
-        std::cout << "Invalid input.\nPlease enter y or n.\n";
-        continue;
-      }
-
-      char userChar = std::tolower(userConfirmation[0]);
-      if (userChar == 'y')
-      {
-        std::ofstream file(password_file);
-        break;
-      }
-      else if (userChar == 'n')
-      {
-        std::cout << "File creation aborted.\n";
-        throw std::runtime_error("User aborted file creation");
-      }
-      else
-      {
-        std::cout << "Invalid input.\nPlease enter y or n.\n";
-        continue;
-      }
-    }
-  }
-  else
-  {
-    std::ofstream file(password_file);
-  }
-};
-
-// check if file exists to load
-void FileHandler::loadData()
-{
-  checkFile();
-};
-
-// creating and formatting entry to add
-std::string FileHandler::formatEntry()
-{
-  std::string userInputSite;
-  std::string userInputUsername;
-
-  std::cout << "Enter site: \n";
-  std::getline(std::cin, userInputSite);
-  std::cout << "Checking if entry does not already exist\n";
-  entryExists(userInputSite);
-
-  std::cout << "Enter username: \n";
-  std::getline(std::cin, userInputUsername);
-
-  std::string currentDate = getCurrentDateAndTime();
-  PasswordGenerator newPassword;
-  std::string password = newPassword.getPassword();
-
-  std::cout << "Here is your entry: (site , username, password, date)\n";
-  std::string newEntry = userInputSite + ", " + userInputUsername + ", " + password + ", " + currentDate;
-  std::cout << newEntry << "\n";
-  return newEntry;
-};
-
-// save new password entry and send confirmation
-void FileHandler::saveData(const std::string &newEntry)
-{
-  if (std::cin.good())
-  { // check if cin is connected (console application)
-    while (true)
-    {                               // for console
-      std::string userConfirmation; // string type instead of char, to only use getline
-      std::cout << "Would you like to save entry?\n"
-                << "Enter y or n.\n";
-      std::getline(std::cin, userConfirmation);
-
-      if (userConfirmation.length() != 1)
-      { // check input validity
-        std::cout << "Invalid input,\nPlease enter y or n.\n";
-        continue; // begin next loop
-      }
-
-      char userChar = std::tolower(userConfirmation[0]); // normalize case
-      if (userChar == 'n')
-      {
-        std::cout << "Entry not saved.\n";
-        return;
-      }
-      else if (userChar == 'y')
-      {
-        checkFile();
-        std::ofstream file(password_file, std::ios::app); // append entry
-        file << newEntry << "\n";
-        std::cout << "New password entry successfully added.\n";
-        return;
-      }
-      else
-      {
-        std::cout << "Invalid input,\nPlease enter y or n.\n";
-        continue;
-      }
-    }
-  }
-  else
-  {
-    checkFile();
+bool FileHandler::fileOpens() {
     std::ofstream file(password_file, std::ios::app);
-    if (!file.is_open())
-    {
-      throw std::runtime_error("Failed to open file for writing");
+    return file.is_open();
+}
+
+void FileHandler::checkFile() {
+    if (!fileExists()) {
+        createFile();
     }
-    file << newEntry << "\n";
-    file.close();
-  }
-};
+}
 
-// read CSV file to see if password doesn't already exist
-void FileHandler::entryExists(const std::string &siteForPassword)
-{
-  std::string line;
-  std::ifstream file(password_file);
-
-  if (!file.is_open())
-  {
-    throw std::runtime_error("Failed to open file for reading");
-  }
-
-  while (std::getline(file, line))
-  {
-    size_t pos = line.find(',');
-    if (pos != std::string::npos)
-    {                                         // is ',' was found proceed; std::string:npos = no position (i.e. not found)
-      std::string site = line.substr(0, pos); // extract substring from '0 - ,' as site is first entry in each line
-      if (siteForPassword == site)
-      {
-        std::cout << "Entry already exists.\n";
-        return;
-      }
+void FileHandler::createFile() {
+    std::ofstream file(password_file);
+    if (!file.is_open()) {
+        throw std::runtime_error("Unable to create file");
     }
-  }
+}
 
-  std::cout << "Entry does not exist in file.\n";
-};
+std::vector<std::string> FileHandler::loadData() {
+    checkFile();
+    std::vector<std::string> entries;
+    std::ifstream inFile(password_file);
+    std::string line;
+    while (std::getline(inFile, line)) {
+        if (!line.empty())
+            entries.push_back(line);
+    }
+    inFile.close();
+    return entries;
+}
 
-// get date to add to entry
-std::string FileHandler::getCurrentDateAndTime()
-{
-  time_t now = time(0); // time_t, data type to represent time as int; gives time in seconds from 1/1/1970
-  char buf[80];
-  strftime(buf, sizeof(buf), "%m-%d-%Y", localtime(&now)); // localtime(&now) converts 'now' into struct tm*
-  return std::string(buf);                                 // convert char arrray into string; NOT type casting
-};
+std::string FileHandler::createEntry(const std::string &site, const std::string &username) {
+    PasswordGenerator pg;
+    std::string password = pg.getPassword();
+    return site + ", " + username + ", " + password;
+}
+
+bool FileHandler::entryExists(const std::string &site) {
+    std::vector<std::string> entries = loadData();
+    for (const auto &entry : entries) {
+        size_t pos = entry.find(',');
+        if (pos != std::string::npos) {
+            std::string existingSite = entry.substr(0, pos);
+            if (existingSite == site)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool FileHandler::saveData(const std::string &newEntry, bool overwrite) {
+    checkFile();
+    std::vector<std::string> entries = loadData();     // Load current entries from the file
+    size_t pos = newEntry.find(',');    // Extract website from newEntry
+    std::string newSite = (pos != std::string::npos) ? newEntry.substr(0, pos) : "";
+    bool found = false;    // Check for an existing entry and update or cancel based on the overwrite flag
+    for (auto &entry : entries) {
+        size_t posEntry = entry.find(',');
+        std::string site = (posEntry != std::string::npos) ? entry.substr(0, posEntry) : "";
+        if (site == newSite) {
+            if (!overwrite)
+                return false;  // Duplicate found BUT no overwrite chosen
+            entry = newEntry;  // Overwrite existing entry
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        entries.push_back(newEntry);
+    }
+    
+    // Sort entries alphabetically by website for every new entry added
+    std::sort(entries.begin(), entries.end(), [](const std::string &a, const std::string &b) {
+        size_t posA = a.find(',');
+        size_t posB = b.find(',');
+        std::string siteA = (posA != std::string::npos) ? a.substr(0, posA) : a;
+        std::string siteB = (posB != std::string::npos) ? b.substr(0, posB) : b;
+        return siteA < siteB;
+    });
+    
+    // write all sorted entries back to the file (overwriting the file).
+    std::ofstream outFile(password_file, std::ios::trunc);
+    if (!outFile.is_open()) {
+        throw std::runtime_error("Failed to open file for writing");
+    }
+    for (const auto &entry : entries) {
+        outFile << entry << "\n";
+    }
+    outFile.close();
+    return true;
+}

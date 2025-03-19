@@ -2,8 +2,6 @@
 FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind no matter what (parameters and returns)
 --------
 TODO:
-    1. Provide user control for characters to not include (some special characters may not be allowed on webpages)
-    2. Add to unit test to see if password without special char is made and password with SPECIFIC special chars not to be used is made
 */
 
 #include <iostream>
@@ -15,6 +13,11 @@ TODO:
 // constructor when password length  specified
 PasswordGenerator::PasswordGenerator(int length, bool excludeSpecialChars, const std::string& excludedChars) {
     m_password = generatePassword(length, excludeSpecialChars, excludedChars);
+}
+
+// Overloaded constructor for custom password input via GUI
+PasswordGenerator::PasswordGenerator(const std::string& customPassword) {
+    m_password = customPassword;
 }
 
 // getter
