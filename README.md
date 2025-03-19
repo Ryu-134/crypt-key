@@ -1,5 +1,19 @@
 # CryptKey - ! WARNING: these are all temporary placeholders, will finalize later ! 
 
+## Proper Usage:
+1. Store executable on usb with csv file in root directory of USB
+2. Run from USB 
+3. Open CSV file and manually find entry as its alphabetical
+    a. NOTE: using Excel makes copy and pasting username and password efficient
+KEY: Keep it lightweight and portable!
+
+## Security Layers: 
+- Must consider tradeoff between convenience & portability vs security
+1. Physical attachment to self via carabiner
+2. Airtag tracking
+3. USB w/ built in PIN function 
+4. Encryption to decrypt CSV through password 
+
 ## Team Workflow - REMOVE LATER
 1. **Create feature branch**:
 ```
@@ -70,42 +84,6 @@ This is a project for creating an offline password manager in C++ with integrate
 
 ### Installation
 
-1. **Clone the Repository:**
-
-   ```
-   git clone https://github.com/Ryu-134/offline-password-manager.git
-   ```
-
-2. **Install Dependencies:**
-
-   - **TBA**
-
-3. **Set Up the Directory Structure:**
-
-   Ensure your project directory is organized as follows:
-
-   ```
-   PasswordManager/
-   ├── src/
-   │   ├── main.cpp
-   │   ├── PasswordGenerator.cpp
-   │   └── FileHandler.cpp
-   ├── include/
-   │   ├── PasswordGenerator.h
-   │   ├── FileHandler.h
-   │   └── gui.h
-   ├── gui/
-   │   ├── ***TBA***
-   ├── .vscode/
-       ├── tasks.json
-       └── launch.json
-
-
-4. **Configure VSCode:**
-
-   - Place `tasks.json` and `launch.json` in the `.vscode/` directory.
-   - Adjust paths in `tasks.json` and `launch.json` to match your directory structure.
-
 ### Build the Project - TBA - CONSIDER CREATING BINARY TO LOAD ONTO USB
 
 ### Running the Application
@@ -113,14 +91,6 @@ This is a project for creating an offline password manager in C++ with integrate
 ## Usage
 
 ### GUI Interface:
-
-1. Launch the application.
-2. Enter the site and username in the respective fields.
-3. Click "Generate Password" to create a new password.
-4. Click "Save Entry" to save the details to `user_data.csv`.
-  - a. Append if entry does not exist
-  - b. If entry exists prompt user to overwrite or not.
-
 
 ## Project Structure
 
@@ -137,22 +107,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 
----
+--
 
-# Build Environment Setup
-
-## Prerequisites
-
-- **Operating System:** 
-- **Compiler:** 
-- **IDE:** Visual Studio Code (VSCode)
-- **Dependencies:**
-  - **TBA**
-
-- **Tools:**
-  - TBA
-
-## Setup Instructions
-
----
 
