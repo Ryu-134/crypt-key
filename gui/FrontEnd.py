@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
+import subprocess
 
 
 class CryptKeyApp(QWidget):
@@ -142,7 +143,7 @@ class CryptKeyApp(QWidget):
         return layout
 
     def on_save_click(self):
-        """Handles the save button click event (visually changes button color)"""
+        """Handles the save button click event and generates password via C++ backend"""
         self.save_button.setStyleSheet("""
             background-color: lightgray; 
             border: 2px solid black; 
@@ -151,7 +152,29 @@ class CryptKeyApp(QWidget):
             font-size: 16px;
             color: black;
         """)
-        print("Save button clicked!")  # For testing
+
+        length = self.length.currentText()
+        use_upper = self.uppercase.currentText() == "Yes"
+        use_numbers = self.numbers.currentText() == "Yes"
+        use_special = self.special_chars.currentText() != "None"
+
+        try:
+            result = subprocess.run([
+                "../build/CryptKey",
+                "--length", length,
+                "--upper", str(use_upper).lower(),
+                "--numbers", str(use_numbers).lower(),
+                "--special", str(use_special).lower()
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            if result.returncode == 0:
+                self.password_display.setText(result.stdout.strip())
+            else:
+                self.password_display.setText("Error: " + result.stderr.strip())
+
+        except Exception as e:
+            self.password_display.setText("Execution failed")
+            print("Error:", e)
 
 
 # Run the PyQt App
