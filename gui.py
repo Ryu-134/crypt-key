@@ -193,11 +193,11 @@ username_entry = tk.Entry(frame, width=50, bg=COLOR_WIDGET_BG, fg=COLOR_FG, font
 username_entry.grid(row=1, column=1, sticky=tk.W, pady=8, padx=5)
 
 # Generate Button (centered):
-generate_button = ttk.Button(frame, text="Generate Password Entry", style="Dark.TButton", command=generate_entry)
+generate_button = ttk.Button(frame, text="Generate Password", style="Dark.TButton", command=generate_entry)
 generate_button.grid(row=2, column=0, columnspan=2, pady=12)
 
 # Output Label and Text Widget:
-output_label = ttk.Label(frame, text="Output:", style="Dark.TLabel")
+output_label = ttk.Label(frame, text="Password:", style="Dark.TLabel")
 output_label.grid(row=3, column=0, sticky=tk.NW, pady=8, padx=5)
 output_text = tk.Text(frame, height=1, width=50, bg=COLOR_WIDGET_BG, fg=COLOR_FG, 
                        font=custom_font,
