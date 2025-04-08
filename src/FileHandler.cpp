@@ -66,7 +66,7 @@ std::vector<std::string> FileHandler::loadData() {
 std::string FileHandler::createEntry(const std::string &site, const std::string &username) {
     PasswordGenerator pg;
     std::string password = pg.getPassword();
-    return site + ", " + username + ", " + password;
+    return "\"" + site + "\",\"" + username + "\",\"" + password + "\"";
 }
 
 bool FileHandler::entryExists(const std::string &site) {

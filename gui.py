@@ -23,19 +23,43 @@ def append_to_csv(website, username, password, filename="user_data.csv"):
 # FUNCTION: generate_entry
 # ------------------------------------------------
 def generate_entry():
-    """Retrieve website and username from the GUI and call the backend executable in dry-run mode.
-       Then pass the generated CSV entry to confirm_entry() for confirmation."""
+    """Retrieve website, username, and customization options from the GUI,
+    then call the backend executable in dry-run mode.
+    Pass the generated CSV entry to confirm_entry() for confirmation."""
     site = site_entry.get().strip()
     username = username_entry.get().strip()
     if not site or not username:
         messagebox.showerror("Input Error", "Both Website and Username are required!")
         return
 
+    # Retrieve customization options from dropdowns:
+    how_val = choose_how_var.get()              # "Custom" or "Random"
+    length_val = length_var.get()               # e.g., "16"
+    special_val = special_var.get()             # "None", "Some", "All"
+    numbers_val = numbers_var.get()             # "Yes" or "No"
+    uppercase_val = uppercase_var.get()         # "Yes" or "No"
+
     # Relative path from crypt-key (where gui.py is) to the backend executable:
     executable = "gui/build/CryptKey.app/Contents/MacOS/CryptKey" if os.name != "nt" else "password_manager.exe"
-
-    # Call backend in dry-run mode to generate the entry without saving.
-    cmd = [executable, "--site", site, "--username", username, "--dry-run"]
+    
+    # Build the command including the extra customization flags.
+    # We assume that if "Yes" is selected, we do nothing; if "No" or "None", we add appropriate flags.
+    cmd = [
+        executable,
+        "--site", site,
+        "--username", username,
+        "--length", length_val,
+        "--how", how_val,
+        "--dry-run"   # dry-run: generate but don't save.
+    ]
+    if uppercase_val == "No":
+        cmd.append("--no-uppercase")
+    if numbers_val == "No":
+        cmd.append("--no-numbers")
+    if special_val == "None":
+        cmd.append("--excludeSpecial")
+    # If "Some" or "All" are selected for special characters, you might decide not to add a flag,
+    # assuming the default behavior is to include them.
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -65,16 +89,16 @@ def generate_entry():
 # FUNCTION: confirm_entry
 # ------------------------------------------------
 def confirm_entry(entire_entry, site, username, executable):
-    """Open a modal confirmation window displaying the entire CSV entry ("website, username, password").
-       If confirmed, call the backend again (without --dry-run) to save the entry,
-       then update the password display with the generated password."""
+    """Opens a modal confirmation window displaying the entire CSV entry ("website, username, password").
+    If confirmed, calls the backend (without --dry-run) to save the entry,
+    then updates the main window's output with the final generated password."""
     parts = entire_entry.split(",")
     generated_password = parts[2].strip() if len(parts) >= 3 else entire_entry
 
     confirm_win = tk.Toplevel(root)
     confirm_win.title("Confirm Entry")
     confirm_win.configure(bg=COLOR_ROOT_BG)
-    confirm_win.grab_set()  # Make it modal
+    confirm_win.grab_set()  # Modal
 
     confirm_win.minsize(400, 200)
     confirm_frame = ttk.Frame(confirm_win, style="Dark.TFrame", padding=20)
@@ -100,15 +124,29 @@ def confirm_entry(entire_entry, site, username, executable):
 
     def on_confirm(generated_pwd):
         confirm_win.destroy()
-        # Call the backend without --dry-run (adding --overwrite) to save the entry.
-        cmd_confirm = [executable, "--site", site, "--username", username, "--overwrite"]
+        # Build the command for final saving (without --dry-run, but with --overwrite and the customization flags)
+        cmd_confirm = [
+            executable,
+            "--site", site,
+            "--username", username,
+            "--length", length_var.get(),
+            "--how", choose_how_var.get(),
+            "--overwrite"
+        ]
+        if uppercase_var.get() == "No":
+            cmd_confirm.append("--no-uppercase")
+        if numbers_var.get() == "No":
+            cmd_confirm.append("--no-numbers")
+        if special_var.get() == "None":
+            cmd_confirm.append("--excludeSpecial")
+
         try:
             result_confirm = subprocess.run(cmd_confirm, capture_output=True, text=True, check=True)
             final_output = result_confirm.stdout.strip()
             parts_final = final_output.split(",")
             final_password = parts_final[2].strip() if len(parts_final) >= 3 else final_output
 
-            # Update password display in main window (use password_entry)
+            # Update the password display in the main window.
             password_entry.delete(0, tk.END)
             password_entry.insert(0, final_password)
 
@@ -144,10 +182,10 @@ root.resizable(True, True)
 # COLORS & FONTS
 # ------------------------------------------------
 # Colors for confirm window (Dark theme) used in modal:
-COLOR_ROOT_BG   = "white"  # Confirm window bg set to white for consistency with the main window.
+COLOR_ROOT_BG   = "white"  # Confirm window bg set to white
 COLOR_FRAME_BG  = "#1E1E1E"
 COLOR_WIDGET_BG = "#555555"
-COLOR_FG        = "#FFFFFF"  # Used in confirm window (dark theme)
+COLOR_FG        = "#FFFFFF"  # Used in dark theme styling
 
 title_font = ("Arial", 36, "bold")
 label_font = ("Arial", 14, "bold")
