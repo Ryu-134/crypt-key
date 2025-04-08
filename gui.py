@@ -3,36 +3,71 @@ from tkinter import ttk, messagebox
 import tkinter.font as tkFont
 import subprocess
 import os
+import csv
+import sys
 
 # ------------------------------------------------
-# Backend Logic (adapt these for your combos)
+# FUNCTION: append_to_csv
+# ------------------------------------------------
+def append_to_csv(website, username, password, filename="user_data.csv"):
+    """Append the entry to the CSV file. If the file is new or empty, write headers first."""
+    file_exists = os.path.isfile(filename)
+    write_header = (not file_exists) or (os.path.getsize(filename) == 0)
+    with open(filename, "a", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        if write_header:
+            writer.writerow(["Website", "Username", "Password"])
+        writer.writerow([website, username, password])
+
+# ------------------------------------------------
+# FUNCTION: generate_entry
 # ------------------------------------------------
 def generate_entry():
-    """Call your backend using 'dry-run' logic, then confirm the result."""
-    # Example of reading combo selections:
-    how_val = choose_how_var.get()
-    length_val = length_var.get()
-    special_val = special_var.get()
-    numbers_val = numbers_var.get()
-    uppercase_val = uppercase_var.get()
+    """Retrieve website and username from the GUI and call the backend executable in dry-run mode.
+       Then pass the generated CSV entry to confirm_entry() for confirmation."""
+    site = site_entry.get().strip()
+    username = username_entry.get().strip()
+    if not site or not username:
+        messagebox.showerror("Input Error", "Both Website and Username are required!")
+        return
 
-    # In your real code, you'd build a command including these flags:
-    # e.g. cmd = ["./password_manager", "--how", how_val, "--length", length_val, ...]
-    # For now, just show a mock message:
-    messagebox.showinfo("Generate Entry", 
-        f"Simulating backend call with:\n"
-        f"how={how_val}, length={length_val}, special={special_val}, numbers={numbers_val}, uppercase={uppercase_val}"
-    )
+    # Relative path from crypt-key (where gui.py is) to the backend executable:
+    executable = "gui/build/CryptKey.app/Contents/MacOS/CryptKey" if os.name != "nt" else "password_manager.exe"
 
-    # Suppose the backend returned a CSV line: "website, username, password"
-    # We'll simulate that for confirm_entry:
-    mock_csv_line = f"{how_val}, {length_val}, MyP@ssw0rd!"
-    confirm_entry(mock_csv_line)
+    # Call backend in dry-run mode to generate the entry without saving.
+    cmd = [executable, "--site", site, "--username", username, "--dry-run"]
 
-def confirm_entry(entire_entry):
-    """Modal confirmation window showing the CSV entry.
-    If confirmed, calls backend again (without --dry-run).
-    """
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        entire_entry = result.stdout.strip()  # Expected format: "website, username, password"
+        confirm_entry(entire_entry, site, username, executable)
+    except subprocess.CalledProcessError as e:
+        err_msg = e.stderr.strip()
+        if "Entry for this site already exists" in err_msg:
+            answer = messagebox.askyesno("Duplicate Detected", 
+                                         "An entry for this site already exists.\nDo you want to overwrite it?")
+            if answer:
+                cmd.append("--overwrite")
+                try:
+                    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                    entire_entry = result.stdout.strip()
+                    confirm_entry(entire_entry, site, username, executable)
+                except subprocess.CalledProcessError as e2:
+                    messagebox.showerror("Backend Error", f"Error: {e2.stderr.strip()}")
+            else:
+                messagebox.showinfo("Cancelled", "Operation cancelled.")
+        else:
+            messagebox.showerror("Backend Error", f"Error: {err_msg}")
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+# ------------------------------------------------
+# FUNCTION: confirm_entry
+# ------------------------------------------------
+def confirm_entry(entire_entry, site, username, executable):
+    """Open a modal confirmation window displaying the entire CSV entry ("website, username, password").
+       If confirmed, call the backend again (without --dry-run) to save the entry,
+       then update the password display with the generated password."""
     parts = entire_entry.split(",")
     generated_password = parts[2].strip() if len(parts) >= 3 else entire_entry
 
@@ -54,10 +89,8 @@ def confirm_entry(entire_entry):
 
     button_frame = ttk.Frame(confirm_frame, style="Dark.TFrame")
     button_frame.pack(fill=tk.X, pady=10)
-
     yes_button = ttk.Button(button_frame, text="Yes", command=lambda: on_confirm(generated_password), style="Dark.TButton")
     no_button = ttk.Button(button_frame, text="No", command=lambda: on_cancel(), style="Dark.TButton")
-
     yes_button.grid(row=0, column=0, padx=10)
     no_button.grid(row=0, column=1, padx=10)
     button_frame.columnconfigure(0, weight=1)
@@ -67,17 +100,28 @@ def confirm_entry(entire_entry):
 
     def on_confirm(generated_pwd):
         confirm_win.destroy()
-        # Here you’d call your backend again (w/o --dry-run). For now, just show the final password in the main entry:
-        password_entry.delete(0, tk.END)
-        password_entry.insert(0, generated_pwd)
-        messagebox.showinfo("Entry Added", "Your entry has been saved (simulated)!")
+        # Call the backend without --dry-run (adding --overwrite) to save the entry.
+        cmd_confirm = [executable, "--site", site, "--username", username, "--overwrite"]
+        try:
+            result_confirm = subprocess.run(cmd_confirm, capture_output=True, text=True, check=True)
+            final_output = result_confirm.stdout.strip()
+            parts_final = final_output.split(",")
+            final_password = parts_final[2].strip() if len(parts_final) >= 3 else final_output
+
+            # Update password display in main window (use password_entry)
+            password_entry.delete(0, tk.END)
+            password_entry.insert(0, final_password)
+
+            messagebox.showinfo("Entry Added", "Your entry has been saved!")
+        except subprocess.CalledProcessError as e:
+            messagebox.showerror("Backend Error", f"Error: {e.stderr.strip()}")
 
     def on_cancel():
         confirm_win.destroy()
         messagebox.showinfo("Cancelled", "Entry not saved.")
 
 # ------------------------------------------------
-# Helper: center a window
+# Helper: center_window
 # ------------------------------------------------
 def center_window(win):
     win.update_idletasks()
@@ -88,21 +132,22 @@ def center_window(win):
     win.geometry(f"{width}x{height}+{x}+{y}")
 
 # ------------------------------------------------
-# Main Window Setup
+# MAIN WINDOW SETUP (GUI)
 # ------------------------------------------------
 root = tk.Tk()
 root.title("CryptKey")
-root.configure(bg="white")  # White background
+root.configure(bg="white")
 root.minsize(700, 400)
 root.resizable(True, True)
 
 # ------------------------------------------------
-# Colors & Fonts
+# COLORS & FONTS
 # ------------------------------------------------
-COLOR_ROOT_BG   = "white"     # so the confirm window also has a white bg
+# Colors for confirm window (Dark theme) used in modal:
+COLOR_ROOT_BG   = "white"  # Confirm window bg set to white for consistency with the main window.
 COLOR_FRAME_BG  = "#1E1E1E"
 COLOR_WIDGET_BG = "#555555"
-COLOR_FG        = "#FFFFFF"
+COLOR_FG        = "#FFFFFF"  # Used in confirm window (dark theme)
 
 title_font = ("Arial", 36, "bold")
 label_font = ("Arial", 14, "bold")
@@ -110,46 +155,40 @@ password_label_font = ("Arial", 16, "bold")
 combo_font = ("Arial", 12)
 
 # ------------------------------------------------
-# TTK Style (Dark-ish for confirmation windows)
+# TTK STYLE (for confirm window; dark theme)
 # ------------------------------------------------
 style = ttk.Style(root)
 style.theme_use("clam")
-
 style.configure("Dark.TFrame", background=COLOR_FRAME_BG)
 style.configure("Dark.TLabel", background=COLOR_FRAME_BG, foreground=COLOR_FG, font=label_font)
 style.configure("Dark.TButton", background=COLOR_WIDGET_BG, foreground=COLOR_FG,
                 borderwidth=0, focusthickness=0, relief="flat", font=label_font, padding=(6,6))
 style.map("Dark.TButton", background=[("active", "#444444")])
+style.configure("Dark.TEntry", fieldbackground=COLOR_WIDGET_BG, foreground=COLOR_FG,
+                borderwidth=0, font=combo_font)
 
 # ------------------------------------------------
-# Top Black Banner
+# TOP BLACK BANNER
 # ------------------------------------------------
 banner = tk.Frame(root, bg="black", height=60)
 banner.pack(fill="x", side="top")
-
-title_label = tk.Label(
-    banner, text="CryptKey",
-    font=title_font,
-    fg="white", bg="black"
-)
+title_label = tk.Label(banner, text="CryptKey", font=title_font, fg="white", bg="black")
 title_label.pack(pady=10)
 
 # ------------------------------------------------
-# Main Content Frame (White)
+# MAIN CONTENT FRAME (WHITE)
 # ------------------------------------------------
 content_frame = tk.Frame(root, bg="white")
 content_frame.pack(fill="both", expand=True, pady=(10,0))
 
 # ------------------------------------------------
-# Helper: Labeled Combo (white label, normal combos)
+# Helper: Create Labeled Dropdown in a Container
 # ------------------------------------------------
 def create_labeled_dropdown(parent, label_text, options, default=None):
     container = tk.Frame(parent, bg="white")
-    container.pack(side="left", padx=40)  # space between groups
-
+    container.pack(side="left", padx=20)
     lbl = tk.Label(container, text=label_text, font=label_font, bg="white", fg="black")
     lbl.pack(pady=(0,5))
-
     var = tk.StringVar()
     combo = ttk.Combobox(container, textvariable=var, values=options, state="readonly", font=combo_font)
     combo.set(default if default else options[0])
@@ -160,8 +199,7 @@ def create_labeled_dropdown(parent, label_text, options, default=None):
 # Row 1: "Choose How", "Length", "Special Characters"
 # ------------------------------------------------
 row1 = tk.Frame(content_frame, bg="white")
-row1.pack(pady=(0, 20))
-
+row1.pack(pady=(0,20))
 choose_how_var = create_labeled_dropdown(row1, "Choose How", ["Custom", "Random"], default="Custom")
 length_var = create_labeled_dropdown(row1, "Length", ["8", "12", "16", "20", "24", "32"], default="16")
 special_var = create_labeled_dropdown(row1, "Special Characters", ["None", "Some", "All"], default="None")
@@ -170,37 +208,44 @@ special_var = create_labeled_dropdown(row1, "Special Characters", ["None", "Some
 # Row 2: "Numbers", "Upper Cases"
 # ------------------------------------------------
 row2 = tk.Frame(content_frame, bg="white")
-row2.pack(pady=(0, 20))
-
+row2.pack(pady=(0,20))
 numbers_var = create_labeled_dropdown(row2, "Numbers", ["Yes", "No"], default="Yes")
 uppercase_var = create_labeled_dropdown(row2, "Upper Cases", ["Yes", "No"], default="Yes")
+
+# ------------------------------------------------
+# Row 3: Website & Username
+# ------------------------------------------------
+row3 = tk.Frame(content_frame, bg="white")
+row3.pack(pady=(0,20))
+website_label = tk.Label(row3, text="Website", font=label_font, bg="white", fg="black")
+website_label.pack(side="left", padx=(0,10))
+site_entry = tk.Entry(row3, width=30, bg="white", fg="black", font=combo_font, borderwidth=1, relief="flat", insertbackground="black")
+site_entry.pack(side="left", padx=(0,30))
+username_label = tk.Label(row3, text="Username", font=label_font, bg="white", fg="black")
+username_label.pack(side="left", padx=(0,10))
+username_entry = tk.Entry(row3, width=30, bg="white", fg="black", font=combo_font, borderwidth=1, relief="flat", insertbackground="black")
+username_entry.pack(side="left")
 
 # ------------------------------------------------
 # "Your Password" Label & Entry
 # ------------------------------------------------
 password_label = tk.Label(content_frame, text="Your Password", font=password_label_font, bg="white", fg="black")
-password_label.pack(pady=(0, 5))
-
+password_label.pack(pady=(0,5))
 password_entry = tk.Entry(content_frame, width=50, font=combo_font, fg="black", bg="#f0f0f0")
 password_entry.insert(0, "Your Password")
-password_entry.pack(pady=(0, 20))
+password_entry.pack(pady=(0,20))
 
 # ------------------------------------------------
 # "Save" Button
 # ------------------------------------------------
-save_button = tk.Button(
-    content_frame, text="Save",
-    font=combo_font, fg="black", bg="#e0e0e0",
-    relief="raised", bd=2,
-    command=generate_entry  # Use your backend logic here
-)
+save_button = tk.Button(content_frame, text="Save", font=combo_font, fg="black", bg="#e0e0e0",
+                        relief="raised", bd=2, command=generate_entry)
 save_button.pack()
 
 # ------------------------------------------------
-# Finalize Layout & Start
+# Finalize Layout & Start Application
 # ------------------------------------------------
 def finalize_layout():
     center_window(root)
-
 root.after(0, finalize_layout)
 root.mainloop()

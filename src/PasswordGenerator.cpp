@@ -8,7 +8,7 @@ TODO:
 #include <string>
 #include <algorithm>
 #include <random>       // bring in random library for better random generation than rand()
-#include "PasswordGenerator.h"
+#include "../include/PasswordGenerator.h"
 
 // constructor when password length  specified
 PasswordGenerator::PasswordGenerator(int length, bool excludeSpecialChars, const std::string& excludedChars) {
