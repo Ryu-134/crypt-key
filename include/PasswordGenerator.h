@@ -5,11 +5,11 @@
 
 class PasswordGenerator {
 public:
-    // New constructor that accepts customization options.
-    // By default, include uppercase letters, numbers, and special characters.
+    // Constructor that accepts customization options.
+    // Defaults: length 16, include uppercase, numbers and special characters are true.
     PasswordGenerator(int length = 16, bool includeUppercase = true, bool includeNumbers = true, bool includeSpecialChars = true, const std::string &excludedChars = "");
 
-    // Overloaded constructor for a custom (user-supplied) password.
+    // Overloaded constructor to directly supply a custom password.
     PasswordGenerator(const std::string &customPassword);
 
     std::string getPassword() const;

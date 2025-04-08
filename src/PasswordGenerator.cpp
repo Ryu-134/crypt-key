@@ -2,12 +2,12 @@
 #include <algorithm>
 #include <random>
 
-// Constructor that uses custom parameters to generate a password
+// Constructor that generates a password based on customization.
 PasswordGenerator::PasswordGenerator(int length, bool includeUppercase, bool includeNumbers, bool includeSpecialChars, const std::string &excludedChars) {
     m_password = generatePassword(length, includeUppercase, includeNumbers, includeSpecialChars, excludedChars);
 }
 
-// Overloaded constructor that simply uses a custom provided password
+// Constructor that uses the provided custom password.
 PasswordGenerator::PasswordGenerator(const std::string &customPassword) : m_password(customPassword) {
 }
 
@@ -23,9 +23,9 @@ int PasswordGenerator::randomIndexGenerator(int max) {
 }
 
 std::string PasswordGenerator::generatePassword(int length, bool includeUppercase, bool includeNumbers, bool includeSpecialChars, const std::string &excludedChars) {
-    // Start with lowercase letters as baseline.
+    // Always start with lowercase letters.
     std::string charSet = "abcdefghijklmnopqrstuvwxyz";
-    
+
     if (includeUppercase) {
         charSet += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
@@ -35,21 +35,20 @@ std::string PasswordGenerator::generatePassword(int length, bool includeUppercas
     if (includeSpecialChars) {
         charSet += "{}()[]:;#^,.?!|&_`'~@$%/+*-=";
     }
-    
-    // Remove any excluded characters.
+
+    // Remove any characters that the user wants to exclude.
     for (char c : excludedChars) {
         charSet.erase(std::remove(charSet.begin(), charSet.end(), c), charSet.end());
     }
-    
+
     if (charSet.empty()) {
         return "";
     }
-    
-    std::string createdPassword;
-    int charSetLength = charSet.size();
+
+    std::string password;
     for (int i = 0; i < length; i++) {
-        int index = randomIndexGenerator(charSetLength);
-        createdPassword += charSet[index];
+        int idx = randomIndexGenerator(charSet.size());
+        password.push_back(charSet[idx]);
     }
-    return createdPassword;
+    return password;
 }

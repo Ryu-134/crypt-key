@@ -5,14 +5,14 @@
 
 int main(int argc, char* argv[]) {
     std::string site, username;
-    int length = 16;
-    bool includeUppercase = true;
-    bool includeNumbers = true;
-    bool includeSpecialChars = true;
+    int length = 16;                   // Default password length
+    bool includeUppercase = true;      // Default: include uppercase letters
+    bool includeNumbers = true;        // Default: include digits
+    bool includeSpecialChars = true;   // Default: include special characters
     bool overwrite = false;
     bool dryRun = false;
 
-    // Parse command-line arguments.
+    // Parse command-line arguments:
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "--site" && i + 1 < argc) {
@@ -41,29 +41,30 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Create a PasswordGenerator using the custom options.
+    // Create a PasswordGenerator with the custom options.
     PasswordGenerator pg(length, includeUppercase, includeNumbers, includeSpecialChars, "");
     std::string password = pg.getPassword();
 
-    // Use FileHandler to create the entry.
+    // Create a CSV entry (make sure there is no extra comma).
+    // Quoting each field protects against internal commas.
+    std::string csvLine = "\"" + site + "\",\"" + username + "\",\"" + password + "\"";
+
+    // If dry-run, output the generated entry without saving.
+    if (dryRun) {
+        std::cout << csvLine << std::endl;
+        return 0;
+    }
+
+    // Otherwise, use FileHandler to save the entry.
     FileHandler fh;
-    // Ensure that when creating the CSV entry, only three fields are produced.
-    std::string newEntry = fh.createEntry(site, username);
-    
-    // Check if entry exists (assuming FileHandler::entryExists does that)
     if (fh.entryExists(site) && !overwrite) {
         std::cerr << "Entry for this site already exists" << std::endl;
         return 1;
     }
-    
-    if (dryRun) {
-        std::cout << newEntry << std::endl;
-        return 0;
-    }
-    
-    bool success = fh.saveData(newEntry, overwrite);
+
+    bool success = fh.saveData(csvLine, overwrite);
     if (success) {
-        std::cout << newEntry << std::endl;
+        std::cout << csvLine << std::endl;
         return 0;
     } else {
         std::cerr << "Failed to save the new entry." << std::endl;
