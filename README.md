@@ -1,5 +1,11 @@
 # CryptKey - ! WARNING: these are all temporary placeholders, will finalize later ! 
 
+## PROJECT REQS:
+    • Ensure test cases for each component 
+    • create use case & activity & crc diagram
+    • Comment code; descriptive identifiers/names, comment at TOP of file w/ student name, email, assignment name
+    • Assignments MUST have README.TXT, summarizing and documenting work submitted
+    
 ## Proper Usage:
 1. Store executable on usb with csv file in root directory of USB
 2. Run from USB 
