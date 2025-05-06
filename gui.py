@@ -43,8 +43,8 @@ def append_to_csv(website, username, password, filename="user_data.csv"):
 def generate_entry():
     """
     Retrieve website, username, and customization options from the GUI,
-    then call the backend executable in dry-run mode to generate a CSV entry.
-    Pass the generated entry to confirm_entry() for confirmation.
+    then call the backend executable to generate and save a CSV entry directly (no confirmation popup).
+    Update the password field with the saved password.
     """
     site = site_entry.get().strip()
     username = username_entry.get().strip()
@@ -62,14 +62,14 @@ def generate_entry():
     # Construct the path to the backend executable
     executable = "gui/build/CryptKey.app/Contents/MacOS/CryptKey" if os.name != "nt" else "password_manager.exe"
 
-    # Build command with customization flags
+    # Build command with customization flags (no --dry-run, we save directly)
     cmd = [
         executable,
         "--site", site,
         "--username", username,
         "--length", length_val,
         "--how", how_val,
-        "--dry-run"   # We first generate (but don't save) the entry
+        "--overwrite"
     ]
     if uppercase_val == "No":
         cmd.append("--no-uppercase")
@@ -77,108 +77,27 @@ def generate_entry():
         cmd.append("--no-numbers")
     if special_val == "None":
         cmd.append("--excludeSpecial")
-    # If "Some" or "All" are chosen, assume default flags are fine
+    # If Custom is selected, get the custom password from the password_entry field and pass it
+    if how_val == "Custom":
+        custom_pwd = password_entry.get().strip()
+        if custom_pwd and custom_pwd != "Your Password":
+            cmd.extend(["--custom-password", custom_pwd])
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        entire_entry = result.stdout.strip()  # format: "website, username, password"
-        confirm_entry(entire_entry, site, username, executable)
+        final_output = result.stdout.strip()
+        parts_final = final_output.split(",")
+        final_password = parts_final[2].strip() if len(parts_final) >= 3 else final_output
+
+        # Update "Your Password" field in the main window
+        password_entry.delete(0, tk.END)
+        password_entry.insert(0, final_password)
+
+        messagebox.showinfo("Entry Added", "Your entry has been saved!")
     except subprocess.CalledProcessError as e:
-        err_msg = e.stderr.strip()
-        if "Entry for this site already exists" in err_msg:
-            answer = messagebox.askyesno(
-                "Duplicate Detected",
-                "An entry for this site already exists.\nDo you want to overwrite it?"
-            )
-            if answer:
-                cmd.append("--overwrite")
-                try:
-                    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-                    entire_entry = result.stdout.strip()
-                    confirm_entry(entire_entry, site, username, executable)
-                except subprocess.CalledProcessError as e2:
-                    messagebox.showerror("Backend Error", f"Error: {e2.stderr.strip()}")
-            else:
-                messagebox.showinfo("Cancelled", "Operation cancelled.")
-        else:
-            messagebox.showerror("Backend Error", f"Error: {err_msg}")
+        messagebox.showerror("Backend Error", f"Error: {e.stderr.strip()}")
     except Exception as e:
         messagebox.showerror("Error", str(e))
-
-# ------------------------------------------------
-# FUNCTION: confirm_entry
-# ------------------------------------------------
-def confirm_entry(entire_entry, site, username, executable):
-    """
-    Open a modal confirmation window with the CSV entry (format: "website, username, password").
-    If confirmed, call the backend again (without --dry-run) to actually save the entry,
-    then update the GUI's password entry with the final generated password.
-    """
-    parts = entire_entry.split(",")
-    generated_password = parts[2].strip() if len(parts) >= 3 else entire_entry
-
-    confirm_win = tk.Toplevel(root)
-    confirm_win.title("Confirm Entry")
-    confirm_win.configure(bg=COLOR_ROOT_BG)
-    confirm_win.grab_set()  # Make modal
-
-    confirm_win.minsize(400, 200)
-    confirm_frame = ttk.Frame(confirm_win, style="Dark.TFrame", padding=20)
-    confirm_frame.pack(fill=tk.BOTH, expand=True)
-
-    prompt_label = ttk.Label(confirm_frame, text="Entire Entry:", style="Dark.TLabel")
-    prompt_label.pack(pady=(10,5))
-    entry_label = ttk.Label(confirm_frame, text=entire_entry, style="Dark.TLabel")
-    entry_label.pack(pady=(0,10))
-    question_label = ttk.Label(confirm_frame, text="Does this look correct?", style="Dark.TLabel")
-    question_label.pack(pady=(0,10))
-
-    button_frame = ttk.Frame(confirm_frame, style="Dark.TFrame")
-    button_frame.pack(fill=tk.X, pady=10)
-    yes_button = ttk.Button(button_frame, text="Yes", command=lambda: on_confirm(generated_password), style="Dark.TButton")
-    no_button = ttk.Button(button_frame, text="No", command=lambda: on_cancel(), style="Dark.TButton")
-    yes_button.grid(row=0, column=0, padx=10)
-    no_button.grid(row=0, column=1, padx=10)
-    button_frame.columnconfigure(0, weight=1)
-    button_frame.columnconfigure(1, weight=1)
-
-    center_window(confirm_win)
-
-    def on_confirm(generated_pwd):
-        confirm_win.destroy()
-        # Build command to actually save the entry (without --dry-run) 
-        cmd_confirm = [
-            executable,
-            "--site", site,
-            "--username", username,
-            "--length", length_var.get(),
-            "--how", choose_how_var.get(),
-            "--overwrite"
-        ]
-        if uppercase_var.get() == "No":
-            cmd_confirm.append("--no-uppercase")
-        if numbers_var.get() == "No":
-            cmd_confirm.append("--no-numbers")
-        if special_var.get() == "None":
-            cmd_confirm.append("--excludeSpecial")
-
-        try:
-            result_confirm = subprocess.run(cmd_confirm, capture_output=True, text=True, check=True)
-            final_output = result_confirm.stdout.strip()
-            parts_final = final_output.split(",")
-            final_password = parts_final[2].strip() if len(parts_final) >= 3 else final_output
-
-            # Update "Your Password" field in the main window
-            password_entry.delete(0, tk.END)
-            password_entry.insert(0, final_password)
-
-            messagebox.showinfo("Entry Added", "Your entry has been saved!")
-        except subprocess.CalledProcessError as e:
-            messagebox.showerror("Backend Error", f"Error: {e.stderr.strip()}")
-
-    def on_cancel():
-        confirm_win.destroy()
-        messagebox.showinfo("Cancelled", "Entry not saved.")
 
 # ------------------------------------------------
 # Helper: center_window

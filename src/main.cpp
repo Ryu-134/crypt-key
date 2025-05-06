@@ -11,6 +11,8 @@ int main(int argc, char* argv[]) {
     bool includeSpecialChars = true;   // Default: include special characters
     bool overwrite = false;
     bool dryRun = false;
+    std::string how = "Random";       // Default: Random
+    std::string customPassword = "";
 
     // Parse command-line arguments:
     for (int i = 1; i < argc; i++) {
@@ -31,19 +33,27 @@ int main(int argc, char* argv[]) {
             overwrite = true;
         } else if (arg == "--dry-run") {
             dryRun = true;
+        } else if (arg == "--how" && i + 1 < argc) {
+            how = argv[++i];
+        } else if (arg == "--custom-password" && i + 1 < argc) {
+            customPassword = argv[++i];
         }
     }
 
     if (site.empty() || username.empty()) {
         std::cerr << "Usage: " << argv[0]
-                  << " --site <website> --username <username> [--length <num>] [--no-uppercase] [--no-numbers] [--excludeSpecial] [--overwrite] [--dry-run]"
+                  << " --site <website> --username <username> [--length <num>] [--no-uppercase] [--no-numbers] [--excludeSpecial] [--overwrite] [--dry-run] [--how <Custom|Random>] [--custom-password <password>]"
                   << std::endl;
         return 1;
     }
 
-    // Create a PasswordGenerator with the custom options.
-    PasswordGenerator pg(length, includeUppercase, includeNumbers, includeSpecialChars, "");
-    std::string password = pg.getPassword();
+    std::string password;
+    if (how == "Custom" && !customPassword.empty()) {
+        password = customPassword;
+    } else {
+        PasswordGenerator pg(length, includeUppercase, includeNumbers, includeSpecialChars, "");
+        password = pg.getPassword();
+    }
 
     // Create a CSV entry (make sure there is no extra comma).
     // Quoting each field protects against internal commas.
