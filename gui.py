@@ -6,9 +6,7 @@ import os
 import csv
 import sys
 
-# ------------------------------------------------
 # FUNCTION: ensure_csv_header_and_write
-# ------------------------------------------------
 def append_to_csv(website, username, password, filename="user_data.csv"):
     """
     Writes a row [website, username, password] to the CSV file.
@@ -37,9 +35,8 @@ def append_to_csv(website, username, password, filename="user_data.csv"):
             writer.writerow(["Website", "Username", "Password"])
         writer.writerow([website, username, password])
 
-# ------------------------------------------------
+
 # FUNCTION: generate_entry
-# ------------------------------------------------
 def generate_entry():
     """
     Retrieve website, username, and customization options from the GUI,
@@ -99,9 +96,8 @@ def generate_entry():
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
-# ------------------------------------------------
+
 # Helper: center_window
-# ------------------------------------------------
 def center_window(win):
     win.update_idletasks()
     width = win.winfo_width()
@@ -110,18 +106,15 @@ def center_window(win):
     y = (win.winfo_screenheight() // 2) - (height // 2)
     win.geometry(f"{width}x{height}+{x}+{y}")
 
-# ------------------------------------------------
 # MAIN WINDOW SETUP (GUI)
-# ------------------------------------------------
 root = tk.Tk()
 root.title("CryptKey")
 root.configure(bg="white")
 root.minsize(700, 400)
 root.resizable(True, True)
 
-# ------------------------------------------------
+
 # COLORS & FONTS
-# ------------------------------------------------
 COLOR_ROOT_BG   = "white"  # Confirm window background matches main window
 COLOR_FRAME_BG  = "#1E1E1E"
 COLOR_WIDGET_BG = "#555555"
@@ -132,9 +125,8 @@ label_font = ("Arial", 14, "bold")
 password_label_font = ("Arial", 16, "bold")
 combo_font = ("Arial", 12)
 
-# ------------------------------------------------
+
 # TTK STYLE (Dark theme for confirm modals)
-# ------------------------------------------------
 style = ttk.Style(root)
 style.theme_use("clam")
 style.configure("Dark.TFrame", background=COLOR_FRAME_BG)
@@ -145,23 +137,20 @@ style.map("Dark.TButton", background=[("active", "#444444")])
 style.configure("Dark.TEntry", fieldbackground=COLOR_WIDGET_BG, foreground=COLOR_FG,
                 borderwidth=0, font=combo_font)
 
-# ------------------------------------------------
+
 # BLACK BANNER (TOP)
-# ------------------------------------------------
 banner = tk.Frame(root, bg="black", height=60)
 banner.pack(fill="x", side="top")
 title_label = tk.Label(banner, text="CryptKey", font=title_font, fg="white", bg="black")
 title_label.pack(pady=10)
 
-# ------------------------------------------------
+
 # CONTENT FRAME (WHITE BG)
-# ------------------------------------------------
 content_frame = tk.Frame(root, bg="white")
 content_frame.pack(fill="both", expand=True, pady=(10,0))
 
-# ------------------------------------------------
+
 # Helper: create_labeled_dropdown
-# ------------------------------------------------
 def create_labeled_dropdown(parent, label_text, options, default=None):
     container = tk.Frame(parent, bg="white")
     container.pack(side="left", padx=20)
@@ -173,26 +162,23 @@ def create_labeled_dropdown(parent, label_text, options, default=None):
     combo.pack()
     return var
 
-# ------------------------------------------------
+
 # ROW 1: "Choose How", "Length", "Special Characters"
-# ------------------------------------------------
 row1 = tk.Frame(content_frame, bg="white")
 row1.pack(pady=(0,20))
 choose_how_var = create_labeled_dropdown(row1, "Choose How", ["Custom", "Random"], default="Custom")
 length_var = create_labeled_dropdown(row1, "Length", ["8", "12", "16", "20", "24", "32"], default="16")
 special_var = create_labeled_dropdown(row1, "Special Characters", ["None", "Some", "All"], default="None")
 
-# ------------------------------------------------
+
 # ROW 2: "Numbers", "Upper Cases"
-# ------------------------------------------------
 row2 = tk.Frame(content_frame, bg="white")
 row2.pack(pady=(0,20))
 numbers_var = create_labeled_dropdown(row2, "Numbers", ["Yes", "No"], default="Yes")
 uppercase_var = create_labeled_dropdown(row2, "Upper Cases", ["Yes", "No"], default="Yes")
 
-# ------------------------------------------------
+
 # ROW 3: Website & Username
-# ------------------------------------------------
 row3 = tk.Frame(content_frame, bg="white")
 row3.pack(pady=(0,20))
 website_label = tk.Label(row3, text="Website", font=label_font, bg="white", fg="black")
@@ -204,25 +190,22 @@ username_label.pack(side="left", padx=(0,10))
 username_entry = tk.Entry(row3, width=30, bg="white", fg="black", font=combo_font, borderwidth=1, relief="flat", insertbackground="black")
 username_entry.pack(side="left")
 
-# ------------------------------------------------
+
 # "Your Password" Label & Entry
-# ------------------------------------------------
 password_label = tk.Label(content_frame, text="Your Password", font=password_label_font, bg="white", fg="black")
 password_label.pack(pady=(0,5))
 password_entry = tk.Entry(content_frame, width=50, font=combo_font, fg="black", bg="#f0f0f0")
 password_entry.insert(0, "Your Password")
 password_entry.pack(pady=(0,20))
 
-# ------------------------------------------------
+
 # "Save" Button
-# ------------------------------------------------
 save_button = tk.Button(content_frame, text="Save", font=combo_font, fg="black", bg="#e0e0e0",
                         relief="raised", bd=2, command=generate_entry)
 save_button.pack()
 
-# ------------------------------------------------
+
 # Finalize Layout & Start
-# ------------------------------------------------
 def finalize_layout():
     center_window(root)
 root.after(0, finalize_layout)

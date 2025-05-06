@@ -1,19 +1,3 @@
-/* 
-FAQ: this is backend logic for password manager using gui; MUST develop with gui use in mind no matter what (parameters and returns)
-----------
-TODO:
-0. Remove date from entry, entry should only be: "website, username, password"
-1. General functionality to check existence, load, save
-2. Move cout/cin into main; ENSURE separate front and back end
-3. update so entryExists (or other) can overwrite existing entry instead of exiting program & prompt user to overwrite or cancel process; ensure efficient and proper data structure is used to store existing enty to compare against new entry 
-4. Ensure new entries are placed properly in alphabetical order 
-5. Ensure CSV file is at same directory level as program so it can append to USB as program will be in a root directory on a USB which also holds the CSV file at root  
-    a. native behavior in C++ std library, DONT hardcode path for portability; simply run program from where file should be stored (e.g. USB root directory) 
-----------
-NOTE: explored storing as '.xlsx' or an excel file but not worth it, not as portable as CSV and bring in much more layers to parse 
-*/
-
-
 #include <fstream>
 #include <filesystem>
 #include <stdexcept>
